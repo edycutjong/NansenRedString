@@ -667,17 +667,20 @@ function generateHTML(data: GraphData): string {
       Graph.cameraPosition({ x: 0, y: 1500, z: 8000 }); // Start extremely far back for a hyperdrive effect
       // The swoop will be triggered in the Reveal UI block
 
-      // Auto-orbit
+      // Auto-orbit synced to actual monitor refresh rate to eliminate jitter
       let angle = 0;
       let autoOrbit = true;
-      const orbitInterval = setInterval(() => {
-        if (!autoOrbit) return;
-        Graph.cameraPosition({
-          x: 550 * Math.sin(angle),
-          y: 80 * Math.sin(angle * 0.7),
-          z: 550 * Math.cos(angle)
-        });
-        angle += Math.PI / 1800;
+      
+      const renderTick = () => {
+        if (autoOrbit) {
+          // Pin lookAt to 0,0,0 so internal graph forces don't shake the camera
+          Graph.cameraPosition({
+            x: 550 * Math.sin(angle),
+            y: 80 * Math.sin(angle * 0.7),
+            z: 550 * Math.cos(angle)
+          }, { x: 0, y: 0, z: 0 });
+          angle += Math.PI / 1800;
+        }
 
         // Rotate starfield & grid slowly
         stars.rotation.y += 0.0001;
@@ -690,7 +693,10 @@ function generateHTML(data: GraphData): string {
             mesh.rotation.y += 0.008;
             mesh.rotation.z += 0.004;
         });
-      }, 16);
+        
+        requestAnimationFrame(renderTick);
+      };
+      requestAnimationFrame(renderTick);
 
       document.getElementById('graph').addEventListener('mousedown', () => { autoOrbit = false; });
 
