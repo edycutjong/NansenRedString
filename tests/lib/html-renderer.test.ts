@@ -74,12 +74,13 @@ describe('html-renderer', () => {
 
     it('should include CDN script for 3d-force-graph', () => {
       const html = generateHTML(createMockGraphData());
-      expect(html).toContain('unpkg.com/3d-force-graph');
+      expect(html).toContain('cdn.jsdelivr.net/npm/3d-force-graph');
     });
 
-    it('should include CDN fallback', () => {
+    it('should include CDN script for three.js and d3', () => {
       const html = generateHTML(createMockGraphData());
-      expect(html).toContain('cdnjs.cloudflare.com');
+      expect(html).toContain('cdn.jsdelivr.net/npm/three');
+      expect(html).toContain('cdn.jsdelivr.net/npm/d3-force-3d');
     });
 
     it('should include auto-orbit camera code', () => {

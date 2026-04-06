@@ -41,7 +41,9 @@ describe('mock', () => {
       expect(result).toBeInstanceOf(Array);
       expect(result.length).toBeGreaterThan(0);
       expect(result[0]).toHaveProperty('address');
-      expect(result[0]).toHaveProperty('label');
+      expect(result[0]).toHaveProperty('volume_usd');
+      expect(result[0]).toHaveProperty('tx_count');
+      expect(result[0]).toHaveProperty('direction');
     });
 
     it('should return related wallets data', () => {
