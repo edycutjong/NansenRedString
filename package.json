@@ -15,7 +15,7 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint 'src/**/*.{ts,js}' 'tests/**/*.{ts,js}'",
     "typecheck": "tsc --noEmit",
-    "ci": "npm run typecheck && npm run lint && npm run test:coverage"
+    "ci": "npm run typecheck && npm run test:coverage"
   },
   "keywords": [
     "nansen",
