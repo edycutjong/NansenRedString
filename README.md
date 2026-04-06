@@ -168,6 +168,8 @@ npm run ci
 | jaredfromsubway.eth | `0xae2Fc483527B8EF99EB5D9B44875F005ba1FaE13` | MEV bot operator |
 | Wintermute | `0x0000000000000000000000000000000000000000` | Market maker |
 | Nomad Exploiter | `0x56D8B635A7C88Fd1104D23d632AF4003B16d0BF6` | Bridge exploit |
+| **Mock Target (Demo)** | `0xdead000000000000000000000000000000000001` | Core test wallet used in automated demo sequence |
+| **Mock Fund (Demo)** | `0xfund000000000000000000000000000000000002` | Test fund wallet used for counterparty comparisons |
 
 ## 🔧 Environment Variables
 
