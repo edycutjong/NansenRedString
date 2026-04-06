@@ -188,7 +188,7 @@ function generateHTML(data: GraphData): string {
       gap: 16px;
       transition: opacity 0.5s;
     }
-    #loading.hidden { opacity: 0; pointer-events: none; }
+    #loading.hidden { opacity: 0; pointer-events: none; display: none; }
     #loading h2 { color: #FF2A2A; font-size: 18px; letter-spacing: 3px; }
     .pulse { animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -246,6 +246,8 @@ function generateHTML(data: GraphData): string {
   <!-- Graph Container -->
   <div id="graph"></div>
 
+  <!-- Dependencies -->
+  <script src="https://unpkg.com/d3-force-3d@3"></script>
   <!-- 3D Force Graph (CDN with fallback) -->
   <script src="https://unpkg.com/3d-force-graph@1.73.3/dist/3d-force-graph.min.js"></script>
   <script>
@@ -293,21 +295,22 @@ function generateHTML(data: GraphData): string {
       .linkDirectionalParticles(d => d.volume_usd > 10000 ? 3 : 0)
       .linkDirectionalParticleSpeed(d => Math.log10(d.tx_count + 1) * 0.002)
       .linkDirectionalParticleWidth(1.5)
-      .linkDirectionalParticleColor(d => d.direction === 'inflow' ? '#22c55e' : '#ef4444')
-      // Physics
-      .d3Force('charge', d3.forceManyBody().strength(-250))
-      // Click handler
-      .onNodeClick(node => {
-        showDetailPanel(node);
-        // Focus camera on clicked node
-        const distance = 200;
-        const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
-        Graph.cameraPosition(
-          { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
-          node,
-          1000
-        );
-      });
+      .linkDirectionalParticleColor(d => d.direction === 'inflow' ? '#22c55e' : '#ef4444');
+
+    // Configure physics (must be after Graph is defined)
+    Graph.d3Force('charge').strength(-250);
+
+    // Click handler (must be after Graph is defined)
+    Graph.onNodeClick(node => {
+      showDetailPanel(node);
+      const distance = 200;
+      const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+      Graph.cameraPosition(
+        { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+        node,
+        1000
+      );
+    });
 
     // Auto-orbit (cinematic — for demo video)
     let angle = 0;
