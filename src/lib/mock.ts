@@ -25,35 +25,59 @@ export const MOCK_WALLETS = {
   mixer: '0xmixer000000000000000000000000000000000010',
 };
 
-// ---------------------------------------------------------------------------
-// Mock Data Generator
-// ---------------------------------------------------------------------------
+function seededRandom(seedStr: string) {
+  let h = 0xdeadbeef;
+  for (let i = 0; i < seedStr.length; i++) h = Math.imul(h ^ seedStr.charCodeAt(i), 2654435761);
+  return function() {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return ((h ^= h >>> 16) >>> 0) / 4294967296;
+  }
+}
+
+function generateDeterministicConnections(address: string, width: number) {
+  const rand = seededRandom(address);
+  const connections = [];
+  
+  for (let i = 0; i < width; i++) {
+    let childAddr;
+    // 20% chance to link back to a known core wallet to create some clusters/cycles instead of 100% pure tree
+    if (rand() < 0.2) {
+      const coreWallets = Object.values(MOCK_WALLETS);
+      childAddr = coreWallets[Math.floor(rand() * coreWallets.length)];
+    } else {
+      // Generate a new plausible looking address based on the seed sequence
+      const hex1 = Math.floor(rand() * 1e16).toString(16);
+      const hex2 = Math.floor(rand() * 1e16).toString(16);
+      childAddr = '0x' + (hex1 + hex2).padEnd(40, '0');
+    }
+    
+    connections.push({
+      address: childAddr,
+      volume_usd: Math.floor(rand() * 800000) + 100,
+      tx_count: Math.floor(rand() * 100) + 1,
+      direction: rand() > 0.6 ? 'out' : (rand() > 0.5 ? 'in' : 'both')
+    });
+  }
+  return connections;
+}
 
 export function getMockData(command: string, args: string[]): unknown {
   // Profiler Trace — returns connected wallets
   if (command.includes('profiler trace')) {
+    const address = getArgValue(args, '--address') || MOCK_WALLETS.seed;
+    const width = parseInt(getArgValue(args, '--width') || '10', 10);
     return {
-      address: getArgValue(args, '--address') || MOCK_WALLETS.seed,
-      connections: [
-        { address: MOCK_WALLETS.smartMoney1, volume_usd: 250000, tx_count: 15, direction: 'out' },
-        { address: MOCK_WALLETS.smartMoney2, volume_usd: 180000, tx_count: 8, direction: 'in' },
-        { address: MOCK_WALLETS.labeled1, volume_usd: 500000, tx_count: 42, direction: 'both' },
-        { address: MOCK_WALLETS.labeled2, volume_usd: 75000, tx_count: 3, direction: 'out' },
-        { address: MOCK_WALLETS.unknown1, volume_usd: 12000, tx_count: 2, direction: 'out' },
-        { address: MOCK_WALLETS.unknown2, volume_usd: 8500, tx_count: 1, direction: 'in' },
-        { address: MOCK_WALLETS.contract1, volume_usd: 320000, tx_count: 28, direction: 'both' },
-        { address: MOCK_WALLETS.exploiter, volume_usd: 95000, tx_count: 5, direction: 'out' },
-      ],
+      address,
+      connections: generateDeterministicConnections(address, width),
     };
   }
 
   // Profiler Counterparties
   if (command.includes('profiler counterparties')) {
-    return [
-      { address: MOCK_WALLETS.smartMoney1, volume_usd: 250000, tx_count: 15, label: 'Alameda Research', direction: 'out' },
-      { address: MOCK_WALLETS.labeled1, volume_usd: 500000, tx_count: 42, label: 'Binance Hot Wallet', direction: 'both' },
-      { address: MOCK_WALLETS.unknown1, volume_usd: 12000, tx_count: 2, direction: 'out' },
-    ];
+    const address = getArgValue(args, '--address') || MOCK_WALLETS.seed;
+    const width = parseInt(getArgValue(args, '--width') || '10', 10);
+    return generateDeterministicConnections(address, width);
   }
 
   // Profiler Related Wallets
