@@ -167,7 +167,16 @@ describe('telemetry', () => {
       recordCall(makeEntry({ endpoint: 'profiler trace', status: '200', cache: 'MISS', latency_ms: 200 }));
       recordCall(makeEntry({ endpoint: 'profiler labels', status: 'SUCCESS', cache: 'HIT', latency_ms: 5 }));
       recordCall(makeEntry({ endpoint: 'long-endpoint-name-that-exceeds-forty-characters-limit', status: 'ERROR', latency_ms: 600 }));
+      recordCall(makeEntry({ endpoint: 'unknown-status', status: 'UNKNOWN_STATUS', cache: 'N/A', latency_ms: 10 }));
 
+      const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      printTelemetryReceipt();
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('should print receipt with zero error count', () => {
+      recordCall(makeEntry({ endpoint: 'profiler trace', status: '200', cache: 'MISS', latency_ms: 200 }));
       const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
       printTelemetryReceipt();
       expect(spy).toHaveBeenCalled();

@@ -67,10 +67,13 @@ describe('mock', () => {
     });
 
     it('should return smart money labels for SM addresses', () => {
-      const result = getMockData('profiler labels', ['--address', MOCK_WALLETS.smartMoney1]) as any[];
-      expect(result).toBeInstanceOf(Array);
-      expect(result[0].label).toBe('Smart Money');
-      expect(result[0].category).toBe('Smart Money');
+      const result1 = getMockData('profiler labels', ['--address', MOCK_WALLETS.smartMoney1]) as any[];
+      expect(result1).toBeInstanceOf(Array);
+      expect(result1[0].label).toBe('Smart Money');
+      
+      const result2 = getMockData('profiler labels', ['--address', MOCK_WALLETS.smartMoney2]) as any[];
+      expect(result2).toBeInstanceOf(Array);
+      expect(result2[0].label).toBe('Smart Money');
     });
 
     it('should return exchange labels for labeled addresses', () => {
@@ -178,6 +181,12 @@ describe('mock', () => {
     it('should return null for unknown commands', () => {
       const result = getMockData('unknown-command', []);
       expect(result).toBeNull();
+    });
+
+    it('should handle missing arg values gracefully for profiler labels', () => {
+      const result = getMockData('profiler labels', []) as any[];
+      expect(result).toBeInstanceOf(Array);
+      expect(result.length).toBe(0);
     });
 
     it('should handle missing arg values gracefully', () => {

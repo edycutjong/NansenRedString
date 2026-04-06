@@ -78,6 +78,14 @@ describe('nansen', () => {
     const r = await execNansen('cmd', []); expect(r.error).toBe('rate limit'); expect(r.code).toBe('RL');
   });
 
+  it('handles JSON error in stderr with no error field', async () => {
+    mockMode = false;
+    mockExecFile.mockImplementation((_c: any, _a: any, _o: any, cb: any) => cb(new Error('fallback msg'), '', '{"code":"NO_ERR_FIELD"}'));
+    const r = await execNansen('cmd', []); 
+    expect(r.error).toBe('fallback msg'); 
+    expect(r.code).toBe('NO_ERR_FIELD');
+  });
+
   it('handles plain error text', async () => {
     mockMode = false;
     mockExecFile.mockImplementation((_c: any, _a: any, _o: any, cb: any) => cb(new Error('e'), '', 'plain error'));

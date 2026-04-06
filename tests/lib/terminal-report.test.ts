@@ -15,12 +15,12 @@ function createMockGraph(): GraphData {
   return {
     nodes: [
       { id: '0xseed', label: '0xseed...dead', type: 'seed', balance_usd: 1000000, pnl_30d: 50000, labels: [], sm_labels: [], depth: 0, defi_protocols: 2 },
-      { id: '0xfund', label: 'Fund Alpha', type: 'smart-money', balance_usd: 5000000, pnl_30d: 200000, labels: ['Fund'], sm_labels: ['Smart Money'], depth: 1, defi_protocols: 5 },
+      { id: '0xfund', label: 'Fund Alpha', type: 'smart-money', balance_usd: 5000000, pnl_30d: 200000, labels: ['Fund'], sm_labels: [], depth: 1, defi_protocols: 5 },
       { id: '0xlabel', label: 'Binance', type: 'labeled', balance_usd: 250000, pnl_30d: -10000, labels: ['Binance'], sm_labels: [], depth: 1, defi_protocols: 0 },
       // Use empty label to trigger `truncate` coverage
       { id: '0xunknown_long_address', label: '', type: 'unknown', balance_usd: 500, pnl_30d: 0, labels: [], sm_labels: [], depth: 2, defi_protocols: 0 },
       { id: '0xshort', label: '', type: 'unknown', balance_usd: 100, pnl_30d: 0, labels: [], sm_labels: [], depth: 2, defi_protocols: 0 },
-      { id: '0xcontract', label: 'Uniswap Router', type: 'contract', balance_usd: 0, pnl_30d: 0, labels: ['Contract'], sm_labels: [], depth: 1, defi_protocols: 0 },
+      { id: '0xcontract', label: 'Uniswap Router', type: 'contract', balance_usd: 100000, pnl_30d: 0, labels: ['Contract'], sm_labels: [], depth: 1, defi_protocols: 0 },
     ],
     links: [
       { source: '0xseed', target: '0xfund', volume_usd: 500000, tx_count: 20, direction: 'outflow' },
