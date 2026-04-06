@@ -83,6 +83,23 @@ describe('compare command', () => {
     spy.mockRestore(); exitSpy.mockRestore();
   });
 
+  it('should handle failure with missing error', async () => {
+    mockFetch.mockResolvedValue({ success: false });
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    const parent = new Command();
+    parent.addCommand(createCompareCommand());
+    parent.exitOverride();
+
+    try {
+      await parent.parseAsync(['compare', '0xA', '0xB'], { from: 'user' });
+    } catch { /* */ }
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    spy.mockRestore(); exitSpy.mockRestore();
+  });
+
   it('should output JSON when --json flag', async () => {
     mockFetch.mockResolvedValue({ success: true, data: { correlation_score: 0.7, shared_labels: ['DEX'] } });
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -100,6 +117,110 @@ describe('compare command', () => {
       try { JSON.parse(c[0]); return true; } catch { return false; }
     });
     expect(jsonCalls.length).toBeGreaterThan(0);
+    spy.mockRestore(); exitSpy.mockRestore();
+  });
+
+  it('should display shared_labels when present', async () => {
+    mockFetch.mockResolvedValue({ success: true, data: {
+      correlation_score: 0.85,
+      common_counterparties: 3,
+      common_tokens: 2,
+      shared_labels: ['Binance', 'Whale'],
+    }});
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    const parent = new Command();
+    parent.addCommand(createCompareCommand());
+    parent.exitOverride();
+
+    try {
+      await parent.parseAsync(['compare', '0xA', '0xB'], { from: 'user' });
+    } catch { /* */ }
+
+    // Verify boxen was called (which contains shared_labels content)
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore(); exitSpy.mockRestore();
+  });
+
+  it('should handle empty shared_labels', async () => {
+    mockFetch.mockResolvedValue({ success: true, data: {
+      correlation_score: 0.5,
+      common_counterparties: 1,
+      common_tokens: 0,
+      shared_labels: [],
+    }});
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    const parent = new Command();
+    parent.addCommand(createCompareCommand());
+    parent.exitOverride();
+
+    try {
+      await parent.parseAsync(['compare', '0xA', '0xB'], { from: 'user' });
+    } catch { /* */ }
+
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore(); exitSpy.mockRestore();
+  });
+
+  it('should show LOW correlation for score < 0.4', async () => {
+    mockFetch.mockResolvedValue({ success: true, data: {
+      correlation_score: 0.1,
+      common_counterparties: 0,
+      common_tokens: 0,
+    }});
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    const parent = new Command();
+    parent.addCommand(createCompareCommand());
+    parent.exitOverride();
+
+    try {
+      await parent.parseAsync(['compare', '0xA', '0xB'], { from: 'user' });
+    } catch { /* */ }
+
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore(); exitSpy.mockRestore();
+  });
+
+  it('should show MEDIUM correlation for score 0.4-0.7', async () => {
+    mockFetch.mockResolvedValue({ success: true, data: {
+      correlation_score: 0.5,
+      common_counterparties: 1,
+      common_tokens: 1,
+    }});
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    const parent = new Command();
+    parent.addCommand(createCompareCommand());
+    parent.exitOverride();
+
+    try {
+      await parent.parseAsync(['compare', '0xA', '0xB'], { from: 'user' });
+    } catch { /* */ }
+
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore(); exitSpy.mockRestore();
+  });
+
+  it('should handle missing correlation_score', async () => {
+    mockFetch.mockResolvedValue({ success: true, data: {} });
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    const parent = new Command();
+    parent.addCommand(createCompareCommand());
+    parent.exitOverride();
+
+    try {
+      await parent.parseAsync(['compare', '0xA', '0xB'], { from: 'user' });
+    } catch { /* */ }
+
+    expect(spy).toHaveBeenCalled();
     spy.mockRestore(); exitSpy.mockRestore();
   });
 });

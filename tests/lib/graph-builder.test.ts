@@ -174,6 +174,76 @@ describe('graph-builder', () => {
     // Label should be set from connection, then possibly overwritten by enrichment
     expect(node).toBeDefined();
   });
+
+  it('should fallback counterparty fields to defaults when missing', async () => {
+    mockTrace.mockResolvedValue({ success: false });
+    mockCp.mockResolvedValue({ success: true, data: [
+      { address: '0xno_fields' }, // Missing volume_usd, tx_count, direction
+    ]});
+    const g = await buildGraph({ ...baseOpts, depth: 1 });
+    const edge = g.links.find(e => e.target === '0xno_fields');
+    expect(edge?.volume_usd).toBe(0);
+    expect(edge?.tx_count).toBe(0);
+    expect(edge?.direction).toBe('bidirectional');
+  });
+
+  it('should handle trace connections with missing optional fields', async () => {
+    mockTrace.mockResolvedValue({ success: true, data: { connections: [
+      { address: '0xbare' }, // No volume_usd, tx_count, direction
+    ]}});
+    const g = await buildGraph({ ...baseOpts, depth: 1 });
+    const edge = g.links.find(e => e.target === '0xbare');
+    expect(edge?.volume_usd).toBe(0);
+    expect(edge?.tx_count).toBe(0);
+    expect(edge?.direction).toBe('bidirectional');
+  });
+
+  it('should normalize "inflow" direction alias', async () => {
+    mockTrace.mockResolvedValue({ success: true, data: { connections: [
+      { address: '0xinflow', volume_usd: 100, tx_count: 1, direction: 'inflow' },
+    ]}});
+    const g = await buildGraph({ ...baseOpts, depth: 1 });
+    expect(g.links.find(e => e.target === '0xinflow')?.direction).toBe('inflow');
+  });
+
+  it('should normalize "outflow" direction alias', async () => {
+    mockTrace.mockResolvedValue({ success: true, data: { connections: [
+      { address: '0xoutflow', volume_usd: 100, tx_count: 1, direction: 'outflow' },
+    ]}});
+    const g = await buildGraph({ ...baseOpts, depth: 1 });
+    expect(g.links.find(e => e.target === '0xoutflow')?.direction).toBe('outflow');
+  });
+
+  it('should pass primary_token through to edge', async () => {
+    mockTrace.mockResolvedValue({ success: true, data: { connections: [
+      { address: '0xtoken', volume_usd: 100, tx_count: 1, direction: 'out', primary_token: 'USDC' },
+    ]}});
+    const g = await buildGraph({ ...baseOpts, depth: 1 });
+    expect(g.links.find(e => e.target === '0xtoken')?.primary_token).toBe('USDC');
+  });
+
+  it('should not override label if enrichment gives labels but label is already custom', async () => {
+    mockTrace.mockResolvedValue({ success: true, data: { connections: [
+      { address: '0xcustom', volume_usd: 100, tx_count: 1, direction: 'out', label: 'My Label' },
+    ]}});
+    mockEnrich.mockImplementation(async (addr: string) => {
+      if (addr === '0xcustom') return { labels: ['Enriched'], sm_labels: [], balance_usd: 0, pnl_30d: 0, defi_protocols: 0 };
+      return { labels: [], sm_labels: [], balance_usd: 0, pnl_30d: 0, defi_protocols: 0 };
+    });
+    const g = await buildGraph({ ...baseOpts, depth: 1 });
+    const node = g.nodes.find(n => n.id === '0xcustom');
+    // Label should stay as "My Label" because it's not a truncated address
+    expect(node?.label).toBe('My Label');
+  });
+
+  it('should handle trace data without connections array', async () => {
+    mockTrace.mockResolvedValue({ success: true, data: { result: 'ok' } }); // No connections key
+    mockCp.mockResolvedValue({ success: true, data: [
+      { address: '0xfallback', volume_usd: 500, tx_count: 2, direction: 'out' },
+    ]});
+    const g = await buildGraph({ ...baseOpts, depth: 1 });
+    expect(g.nodes.find(n => n.id === '0xfallback')).toBeDefined();
+  });
 });
 
 describe('truncateAddress', () => {

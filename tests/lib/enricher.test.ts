@@ -212,4 +212,37 @@ describe('enricher', () => {
     const result = await enrichNode('0xddd');
     expect(result.sm_labels).toContain('Smart Money');
   });
+
+  it('should use realized_pnl_usd when total_pnl_usd is 0 (falsy)', async () => {
+    mockLabels.mockResolvedValue({ success: false });
+    mockBalance.mockResolvedValue({ success: false });
+    mockPnl.mockResolvedValue({ success: true, data: { total_pnl_usd: 0, realized_pnl_usd: 42000 } });
+    mockDefi.mockResolvedValue({ success: false });
+
+    const result = await enrichNode('0xpnlfall');
+    expect(result.pnl_30d).toBe(42000);
+  });
+
+  it('should return 0 when both PnL fields are missing', async () => {
+    mockLabels.mockResolvedValue({ success: false });
+    mockBalance.mockResolvedValue({ success: false });
+    mockPnl.mockResolvedValue({ success: true, data: {} });
+    mockDefi.mockResolvedValue({ success: false });
+
+    const result = await enrichNode('0xnopnl');
+    expect(result.pnl_30d).toBe(0);
+  });
+
+  it('should detect SM by "fund" keyword in label field', async () => {
+    mockLabels.mockResolvedValue({
+      success: true,
+      data: [{ label: 'Venture Fund', tag: '', category: '' }],
+    });
+    mockBalance.mockResolvedValue({ success: false });
+    mockPnl.mockResolvedValue({ success: false });
+    mockDefi.mockResolvedValue({ success: false });
+
+    const result = await enrichNode('0xfund');
+    expect(result.sm_labels).toContain('Venture Fund');
+  });
 });

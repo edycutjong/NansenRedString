@@ -129,6 +129,16 @@ describe('nansen', () => {
     it('fetchAccountStatus', async () => { expect((await fetchAccountStatus()).success).toBe(true); });
     it('fetchWalletShow', async () => { expect((await fetchWalletShow('0x1')).success).toBe(true); });
     it('fetchSchema', async () => { expect((await fetchSchema()).success).toBe(true); });
-    it('checkNansenInstalled', async () => { expect(await checkNansenInstalled()).toBe(true); });
+    it('checkNansenInstalled default', async () => { expect(await checkNansenInstalled()).toBe(true); });
+    
+    it('checkNansenInstalled with forceCheck (success)', async () => {
+      mockExecFile.mockImplementation((_c: any, _a: any, _o: any, cb: any) => cb(null, '', ''));
+      expect(await checkNansenInstalled(true)).toBe(true);
+    });
+
+    it('checkNansenInstalled with forceCheck (fail)', async () => {
+      mockExecFile.mockImplementation((_c: any, _a: any, _o: any, cb: any) => cb(new Error('not found'), '', ''));
+      expect(await checkNansenInstalled(true)).toBe(false);
+    });
   });
 });

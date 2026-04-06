@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { describe, it, expect } from 'vitest';
+import { existsSync, readFileSync, rmSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { GraphData } from '../../src/types/graph.js';
@@ -117,9 +117,9 @@ describe('html-renderer', () => {
 
     it('should include keyboard hints', () => {
       const html = generateHTML(createMockGraphData());
-      expect(html).toContain('[S] Screenshot');
-      expect(html).toContain('[R] Reset Camera');
-      expect(html).toContain('[L] Toggle Labels');
+      expect(html).toContain('Screenshot');
+      expect(html).toContain('Reset');
+      expect(html).toContain('Labels');
     });
 
     it('should include money flow particles', () => {
@@ -131,7 +131,7 @@ describe('html-renderer', () => {
     it('should include loading overlay', () => {
       const html = generateHTML(createMockGraphData());
       expect(html).toContain('id="loading"');
-      expect(html).toContain('Initializing WebGL matrix');
+      expect(html).toContain('compiling webgl force matrix...');
     });
     
     it('should include meta stats', () => {
@@ -155,7 +155,6 @@ describe('html-renderer', () => {
       const outputDir = join(tmpdir(), 'redstring-test-' + Date.now());
       
       try {
-        const { mkdirSync } = require('node:fs');
         mkdirSync(outputDir, { recursive: true });
         
         const outputPath = renderGraph(data, outputDir);

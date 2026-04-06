@@ -1,10 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { existsSync, mkdirSync, rmSync, writeFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync, readdirSync, utimesSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-
-// We need to mock the cache dir before importing
-const TEST_CACHE_DIR = join(tmpdir(), '.redstring-test-cache-' + Date.now());
 
 // Mock homedir so cache goes to temp
 vi.mock('node:os', async (importOriginal) => {
@@ -155,6 +152,15 @@ describe('disk-cache', () => {
       setCache('cmd1', ['a'], { data: 'hello' });
       setCache('cmd2', ['b'], { data: 'world' });
       
+      const files = readdirSync(getCacheDir());
+      if (files.length >= 2) {
+        const now = Date.now();
+        // Set one file artificially robustly in the past
+        utimesSync(join(getCacheDir(), files[0]), new Date(now - 10000), new Date(now - 10000));
+        // Set another robustly in the future
+        utimesSync(join(getCacheDir(), files[1]), new Date(now + 10000), new Date(now + 10000));
+      }
+
       const stats = getCacheStats();
       expect(stats.entries).toBe(2);
       expect(stats.size_bytes).toBeGreaterThan(0);

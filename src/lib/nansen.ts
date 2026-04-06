@@ -283,8 +283,8 @@ export async function fetchWebSearch(query: string) {
 // ---------------------------------------------------------------------------
 
 /** Check if nansen CLI is available */
-export async function checkNansenInstalled(): Promise<boolean> {
-  if (IS_MOCK) return true;
+export async function checkNansenInstalled(forceCheck = false): Promise<boolean> {
+  if (IS_MOCK && !forceCheck) return true;
   return new Promise((resolve) => {
     execFile('nansen', ['--version'], { timeout: 5000 }, (error) => {
       resolve(!error);
