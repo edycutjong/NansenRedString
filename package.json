@@ -1,0 +1,51 @@
+{
+  "name": "nansen-redstring",
+  "version": "1.0.0",
+  "description": "On-chain forensic investigation engine — map wallet networks as interactive 3D graphs",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "redstring": "dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint 'src/**/*.{ts,js}' 'tests/**/*.{ts,js}'",
+    "typecheck": "tsc --noEmit",
+    "ci": "npm run typecheck && npm run lint && npm run test:coverage"
+  },
+  "keywords": [
+    "nansen",
+    "forensics",
+    "investigation",
+    "wallet",
+    "graph",
+    "3d",
+    "webgl",
+    "cli",
+    "crypto",
+    "blockchain"
+  ],
+  "author": "edycutjong",
+  "license": "MIT",
+  "dependencies": {
+    "boxen": "^8.0.1",
+    "chalk": "^5.4.0",
+    "commander": "^13.1.0",
+    "open": "^10.1.0",
+    "ora": "^8.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.12.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^10.1.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.57.2",
+    "vitest": "^3.1.0"
+  }
+}

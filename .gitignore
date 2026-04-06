@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.tgz
+coverage/
+.DS_Store
+
+# Generated investigation output
+output/
+*.html
+!src/templates/*.html
