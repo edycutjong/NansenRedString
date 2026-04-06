@@ -1,5 +1,14 @@
 # 🔴 RedString — On-Chain Forensic Investigation Engine
 
+```text
+    ____          __  _____ __       _             
+   / __ \___  ____/ / / ___// /______(_)___  ____ _
+  / /_/ / _ \/ __  /  \__ \/ __/ ___/ / __ \/ __ `/
+ / _, _/  __/ /_/ /  ___/ / /_/ /  / / / / / /_/ / 
+/_/ |_|\___/\__,_/  /____/\__/_/  /_/_/ /_/\__, /  
+                                          /____/   
+```
+
 [![CI](https://github.com/edycutjong/nansen-redstring/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/nansen-redstring/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)](https://nodejs.org/)
