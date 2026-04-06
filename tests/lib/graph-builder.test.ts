@@ -244,6 +244,13 @@ describe('graph-builder', () => {
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     expect(g.nodes.find(n => n.id === '0xfallback')).toBeDefined();
   });
+
+  it('should hit depth guard directly if depth is 0', async () => {
+    const g = await buildGraph({ ...baseOpts, depth: 0 });
+    // Seed is parsed but no connections are fetched since it halts processing
+    expect(g.nodes.length).toBe(1);
+    expect(g.links.length).toBe(0);
+  });
 });
 
 describe('truncateAddress', () => {

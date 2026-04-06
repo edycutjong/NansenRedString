@@ -39,6 +39,7 @@ export async function buildGraph(options: InvestigationOptions): Promise<GraphDa
 
   while (queue.length > 0) {
     const entry = queue.shift();
+    /* v8 ignore next */
     if (!entry) break;
     const [currentAddress, currentDepth] = entry;
 
