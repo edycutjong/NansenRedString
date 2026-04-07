@@ -9,3 +9,6 @@ coverage/
 output/
 *.html
 !src/templates/*.html
+
+# Vercel deploy
+vercel-deploy/
