@@ -184,8 +184,7 @@ export async function fetchRelatedWallets(address: string, chain = 'ethereum', n
 /** Compare two wallets side-by-side */
 export async function fetchCompare(addressA: string, addressB: string, chain = 'ethereum') {
   return execNansen('research profiler compare', [
-    '--address-a', addressA,
-    '--address-b', addressB,
+    '--addresses', `${addressA},${addressB}`,
     '--chain', chain,
   ]);
 }
