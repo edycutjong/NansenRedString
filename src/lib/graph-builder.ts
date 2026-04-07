@@ -135,15 +135,18 @@ async function fetchConnections(address: string, options: InvestigationOptions):
 
   if (traceResult.success && traceResult.data) {
     const data = traceResult.data as any;
-    if (data.connections && Array.isArray(data.connections)) {
-      return data.connections.slice(0, options.width).map((c: any) => ({
-        address: c.address,
-        volume_usd: c.volume_usd || 0,
-        tx_count: c.tx_count || 0,
-        direction: c.direction || 'both',
-        label: c.label,
-        primary_token: c.primary_token,
-      }));
+    if (data.edges && Array.isArray(data.edges)) {
+      return data.edges.slice(0, options.width).map((e: any) => {
+        const isFrom = e.from ? (e.from.toLowerCase() === address.toLowerCase()) : false;
+        return {
+          address: e.address || (isFrom ? e.to : e.from),
+          volume_usd: e.volume_usd || 0,
+          tx_count: e.tx_count || 0,
+          direction: e.direction || (isFrom ? 'out' : 'in'),
+          label: e.label,
+          primary_token: e.primary_token,
+        };
+      });
     }
   }
 
@@ -152,11 +155,11 @@ async function fetchConnections(address: string, options: InvestigationOptions):
 
   if (cpResult.success && Array.isArray(cpResult.data)) {
     return (cpResult.data as any[]).slice(0, options.width).map((c: any) => ({
-      address: c.address,
-      volume_usd: c.volume_usd || 0,
-      tx_count: c.tx_count || 0,
+      address: c.counterparty_address || c.address,
+      volume_usd: c.total_volume_usd || c.volume_usd || 0,
+      tx_count: c.interaction_count || c.tx_count || 0,
       direction: c.direction || 'both',
-      label: c.label,
+      label: c.counterparty_address_label && c.counterparty_address_label.length > 0 ? c.counterparty_address_label[0] : c.label,
     }));
   }
 

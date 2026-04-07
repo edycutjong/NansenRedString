@@ -43,9 +43,9 @@ describe('graph-builder', () => {
 
   it('should discover connections at depth 1', async () => {
     mockTrace.mockResolvedValue({ success: true, data: {
-      connections: [
-        { address: '0xA', volume_usd: 1000, tx_count: 5, direction: 'out' },
-        { address: '0xB', volume_usd: 2000, tx_count: 3, direction: 'in' },
+      edges: [
+        { from: '0xseed', to: '0xA', volume_usd: 1000, tx_count: 5, direction: 'out' },
+        { from: '0xB', to: '0xseed', volume_usd: 2000, tx_count: 3, direction: 'in' },
       ],
     }});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
@@ -55,9 +55,9 @@ describe('graph-builder', () => {
 
   it('should not revisit nodes', async () => {
     mockTrace.mockImplementation(async (addr: string) => {
-      if (addr === '0xseed') return { success: true, data: { connections: [{ address: '0xA', volume_usd: 100, tx_count: 1, direction: 'out' }] } };
-      if (addr === '0xA') return { success: true, data: { connections: [{ address: '0xseed', volume_usd: 100, tx_count: 1, direction: 'in' }] } };
-      return { success: true, data: { connections: [] } };
+      if (addr === '0xseed') return { success: true, data: { edges: [{ from: '0xseed', to: '0xA', volume_usd: 100, tx_count: 1, direction: 'out' }] } };
+      if (addr === '0xA') return { success: true, data: { edges: [{ from: '0xseed', to: '0xA', volume_usd: 100, tx_count: 1, direction: 'in' }] } };
+      return { success: true, data: { edges: [] } };
     });
     const g = await buildGraph({ ...baseOpts, depth: 3 });
     expect(g.nodes.length).toBe(2);
@@ -65,7 +65,7 @@ describe('graph-builder', () => {
 
   it('should respect depth guard', async () => {
     mockTrace.mockResolvedValue({ success: true, data: {
-      connections: [{ address: '0xdeep', volume_usd: 1000, tx_count: 1, direction: 'out' }],
+      edges: [{ from: '0xseed', to: '0xdeep', volume_usd: 1000, tx_count: 1, direction: 'out' }],
     }});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     const deepNode = g.nodes.find(n => n.id === '0xdeep');
@@ -74,9 +74,9 @@ describe('graph-builder', () => {
 
   it('should filter by minVolume', async () => {
     mockTrace.mockResolvedValue({ success: true, data: {
-      connections: [
-        { address: '0xbig', volume_usd: 50000, tx_count: 10, direction: 'out' },
-        { address: '0xsmall', volume_usd: 100, tx_count: 1, direction: 'out' },
+      edges: [
+        { from: '0xseed', to: '0xbig', volume_usd: 50000, tx_count: 10, direction: 'out' },
+        { from: '0xseed', to: '0xsmall', volume_usd: 100, tx_count: 1, direction: 'out' },
       ],
     }});
     const g = await buildGraph({ ...baseOpts, depth: 1, minVolume: 1000 });
@@ -87,7 +87,7 @@ describe('graph-builder', () => {
   it('should fallback to counterparties when trace fails', async () => {
     mockTrace.mockResolvedValue({ success: false });
     mockCp.mockResolvedValue({ success: true, data: [
-      { address: '0xcp1', volume_usd: 3000, tx_count: 2, direction: 'both', label: 'Binance' },
+      { counterparty_address: '0xcp1', total_volume_usd: 3000, interaction_count: 2, direction: 'both', counterparty_address_label: ['Binance'] },
     ]});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     expect(g.nodes.length).toBe(2);
@@ -96,9 +96,9 @@ describe('graph-builder', () => {
 
   it('should deduplicate edges', async () => {
     mockTrace.mockImplementation(async (addr: string) => {
-      if (addr === '0xseed') return { success: true, data: { connections: [{ address: '0xA', volume_usd: 1000, tx_count: 5, direction: 'out' }] } };
-      if (addr === '0xa') return { success: true, data: { connections: [{ address: '0xseed', volume_usd: 1000, tx_count: 5, direction: 'in' }] } };
-      return { success: true, data: { connections: [] } };
+      if (addr === '0xseed') return { success: true, data: { edges: [{ from: '0xseed', to: '0xA', volume_usd: 1000, tx_count: 5, direction: 'out' }] } };
+      if (addr === '0xa') return { success: true, data: { edges: [{ from: '0xseed', to: '0xA', volume_usd: 1000, tx_count: 5, direction: 'in' }] } };
+      return { success: true, data: { edges: [] } };
     });
     const g = await buildGraph({ ...baseOpts, depth: 2 });
     const edgeCount = g.links.filter(e =>
@@ -108,7 +108,7 @@ describe('graph-builder', () => {
   });
 
   it('should enrich SM nodes', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [{ address: '0xsm', volume_usd: 1000, tx_count: 1, direction: 'out' }] } });
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [{ from: '0xseed', to: '0xsm', volume_usd: 1000, tx_count: 1, direction: 'out' }] } });
     mockEnrich.mockResolvedValue({ labels: ['Fund'], sm_labels: ['Smart Money'], balance_usd: 1e6, pnl_30d: 50000, defi_protocols: 3 });
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     const smNode = g.nodes.find(n => n.id === '0xsm');
@@ -116,7 +116,7 @@ describe('graph-builder', () => {
   });
 
   it('should set label from enrichment', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [{ address: '0xlabel', volume_usd: 1000, tx_count: 1, direction: 'out' }] } });
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [{ from: '0xseed', to: '0xlabel', volume_usd: 1000, tx_count: 1, direction: 'out' }] } });
     mockEnrich.mockImplementation(async (addr: string) => {
       if (addr === '0xlabel') return { labels: ['Binance'], sm_labels: [], balance_usd: 0, pnl_30d: 0, defi_protocols: 0 };
       return { labels: [], sm_labels: [], balance_usd: 0, pnl_30d: 0, defi_protocols: 0 };
@@ -127,7 +127,7 @@ describe('graph-builder', () => {
   });
 
   it('should classify contract nodes', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [{ address: '0xc', volume_usd: 1000, tx_count: 1, direction: 'out' }] } });
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [{ from: '0xseed', to: '0xc', volume_usd: 1000, tx_count: 1, direction: 'out' }] } });
     mockEnrich.mockImplementation(async (addr: string) => {
       if (addr === '0xc') return { labels: ['Uniswap Router'], sm_labels: [], balance_usd: 0, pnl_30d: 0, defi_protocols: 0 };
       return { labels: [], sm_labels: [], balance_usd: 0, pnl_30d: 0, defi_protocols: 0 };
@@ -146,10 +146,10 @@ describe('graph-builder', () => {
   });
 
   it('should normalize edge directions', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [
-      { address: '0xin', volume_usd: 100, tx_count: 1, direction: 'in' },
-      { address: '0xout', volume_usd: 100, tx_count: 1, direction: 'out' },
-      { address: '0xboth', volume_usd: 100, tx_count: 1, direction: 'both' },
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [
+      { from: '0xin', to: '0xseed', volume_usd: 100, tx_count: 1, direction: 'in' },
+      { from: '0xseed', to: '0xout', volume_usd: 100, tx_count: 1, direction: 'out' },
+      { from: '0xseed', to: '0xboth', volume_usd: 100, tx_count: 1, direction: 'both' },
     ]}});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     expect(g.links.find(e => e.target === '0xin')?.direction).toBe('inflow');
@@ -166,8 +166,8 @@ describe('graph-builder', () => {
   });
 
   it('should apply conn.label to node', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [
-      { address: '0xlbl', volume_usd: 100, tx_count: 1, direction: 'out', label: 'Known Whale' },
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [
+      { from: '0xseed', to: '0xlbl', volume_usd: 100, tx_count: 1, direction: 'out', label: 'Known Whale' },
     ]}});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     const node = g.nodes.find(n => n.id === '0xlbl');
@@ -178,53 +178,65 @@ describe('graph-builder', () => {
   it('should fallback counterparty fields to defaults when missing', async () => {
     mockTrace.mockResolvedValue({ success: false });
     mockCp.mockResolvedValue({ success: true, data: [
-      { address: '0xno_fields' }, // Missing volume_usd, tx_count, direction
+      { counterparty_address: '0xno_fields' }, // Missing volume_usd, tx_count, direction
+      { address: '0xcp_address_fallback', volume_usd: 100, tx_count: 1, direction: 'out' } // tests c.address fallback on line 158
     ]});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     const edge = g.links.find(e => e.target === '0xno_fields');
     expect(edge?.volume_usd).toBe(0);
     expect(edge?.tx_count).toBe(0);
     expect(edge?.direction).toBe('bidirectional');
+    
+    // Check fallback
+    expect(g.nodes.find(n => n.id === '0xcp_address_fallback')).toBeDefined();
   });
 
   it('should handle trace connections with missing optional fields', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [
-      { address: '0xbare' }, // No volume_usd, tx_count, direction
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [
+      { from: '0xseed', to: '0xbare' }, // No volume_usd, tx_count, direction
+      { from: '0xother', to: '0xseed' }, // isFrom is false, tests line 145 'in'
+      { address: '0xnofrom', to: '0xseed' } // e.from is undefined, tests line 140 fallback
     ]}});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
-    const edge = g.links.find(e => e.target === '0xbare');
-    expect(edge?.volume_usd).toBe(0);
-    expect(edge?.tx_count).toBe(0);
-    expect(edge?.direction).toBe('bidirectional');
+    const edgeOut = g.links.find(e => e.target === '0xbare');
+    expect(edgeOut?.volume_usd).toBe(0);
+    expect(edgeOut?.tx_count).toBe(0);
+    expect(edgeOut?.direction).toBe('outflow');
+
+    const edgeIn = g.links.find(e => e.target === '0xother');
+    expect(edgeIn?.direction).toBe('inflow');
+    
+    const edgeNoFrom = g.links.find(e => e.target === '0xnofrom');
+    expect(edgeNoFrom?.direction).toBe('inflow');
   });
 
   it('should normalize "inflow" direction alias', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [
-      { address: '0xinflow', volume_usd: 100, tx_count: 1, direction: 'inflow' },
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [
+      { from: '0xinflow', to: '0xseed', volume_usd: 100, tx_count: 1, direction: 'inflow' },
     ]}});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     expect(g.links.find(e => e.target === '0xinflow')?.direction).toBe('inflow');
   });
 
   it('should normalize "outflow" direction alias', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [
-      { address: '0xoutflow', volume_usd: 100, tx_count: 1, direction: 'outflow' },
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [
+      { from: '0xseed', to: '0xoutflow', volume_usd: 100, tx_count: 1, direction: 'outflow' },
     ]}});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     expect(g.links.find(e => e.target === '0xoutflow')?.direction).toBe('outflow');
   });
 
   it('should pass primary_token through to edge', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [
-      { address: '0xtoken', volume_usd: 100, tx_count: 1, direction: 'out', primary_token: 'USDC' },
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [
+      { from: '0xseed', to: '0xtoken', volume_usd: 100, tx_count: 1, direction: 'out', primary_token: 'USDC' },
     ]}});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     expect(g.links.find(e => e.target === '0xtoken')?.primary_token).toBe('USDC');
   });
 
   it('should not override label if enrichment gives labels but label is already custom', async () => {
-    mockTrace.mockResolvedValue({ success: true, data: { connections: [
-      { address: '0xcustom', volume_usd: 100, tx_count: 1, direction: 'out', label: 'My Label' },
+    mockTrace.mockResolvedValue({ success: true, data: { edges: [
+      { from: '0xseed', to: '0xcustom', volume_usd: 100, tx_count: 1, direction: 'out', label: 'My Label' },
     ]}});
     mockEnrich.mockImplementation(async (addr: string) => {
       if (addr === '0xcustom') return { labels: ['Enriched'], sm_labels: [], balance_usd: 0, pnl_30d: 0, defi_protocols: 0 };
@@ -239,7 +251,7 @@ describe('graph-builder', () => {
   it('should handle trace data without connections array', async () => {
     mockTrace.mockResolvedValue({ success: true, data: { result: 'ok' } }); // No connections key
     mockCp.mockResolvedValue({ success: true, data: [
-      { address: '0xfallback', volume_usd: 500, tx_count: 2, direction: 'out' },
+      { counterparty_address: '0xfallback', total_volume_usd: 500, interaction_count: 2, direction: 'out' },
     ]});
     const g = await buildGraph({ ...baseOpts, depth: 1 });
     expect(g.nodes.find(n => n.id === '0xfallback')).toBeDefined();
