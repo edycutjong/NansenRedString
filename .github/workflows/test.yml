@@ -22,4 +22,4 @@ jobs:
         run: bun install
 
       - name: Run vitest coverage
-        run: bun run test:cov
+        run: bun run test:coverage
