@@ -9,7 +9,7 @@
                                           /____/   
 ```
 
-[![CI](https://github.com/edycutjong/nansen-redstring/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/nansen-redstring/actions)
+[![CI](https://github.com/edycutjong/NansenRedString/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/NansenRedString/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](LICENSE)
