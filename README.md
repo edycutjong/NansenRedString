@@ -2,7 +2,7 @@
 
 ```text
     ____          __  _____ __       _             
-   / __ \___  ____/ / / ___// /______(_)___  ____ _
+   / __ \___  ____/ / / ___// /______(_)___  ____  
   / /_/ / _ \/ __  /  \__ \/ __/ ___/ / __ \/ __ `/
  / _, _/  __/ /_/ /  ___/ / /_/ /  / / / / / /_/ / 
 /_/ |_|\___/\__,_/  /____/\__/_/  /_/_/ /_/\__, /  
@@ -14,9 +14,19 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](LICENSE)
 
+### 🔴 [Live Demo → redstring.edycu.dev](https://redstring.edycu.dev/)
+
 **Map wallet networks as interactive 3D graphs.** RedString is a forensic investigation CLI that wraps the [Nansen CLI](https://docs.nansen.ai) to perform BFS traversal of on-chain wallet connections, enrich nodes with financial intelligence, and render self-contained WebGL visualizations.
 
 > Built for the **Nansen CLI Build Challenge — Week 4**
+
+---
+
+## 🎬 Demo
+
+<p align="center">
+  <img src="docs/demo.gif" alt="RedString Demo" width="720" />
+</p>
 
 ---
 
@@ -103,6 +113,10 @@ Core forensic command. Traces wallet connections via BFS and renders a 3D graph.
 | `--json` | Output raw graph JSON | `false` |
 | `-o, --output <dir>` | Output directory for HTML | `cwd` |
 
+<p align="center">
+  <img src="docs/screenshots/terminal-investigate.png" alt="Investigate Command" width="680" />
+</p>
+
 ### `compare <address-a> <address-b>`
 
 Head-to-head wallet comparison. Shows correlation score, common counterparties, and shared tokens.
@@ -112,6 +126,10 @@ Head-to-head wallet comparison. Shows correlation score, common counterparties, 
 | `-c, --chain <chain>` | Blockchain network | `ethereum` |
 | `--json` | Output raw JSON | `false` |
 
+<p align="center">
+  <img src="docs/screenshots/terminal-compare.png" alt="Compare Command" width="680" />
+</p>
+
 ### `profile <address>`
 
 Deep wallet profile — labels, balance, PnL, DeFi positions, and recent transactions.
@@ -120,6 +138,10 @@ Deep wallet profile — labels, balance, PnL, DeFi positions, and recent transac
 |------|-------------|---------|
 | `-c, --chain <chain>` | Blockchain network | `ethereum` |
 | `--json` | Output raw JSON | `false` |
+
+<p align="center">
+  <img src="docs/screenshots/terminal-profile.png" alt="Profile Command" width="680" />
+</p>
 
 ## 🎮 3D Visualizer Controls
 
@@ -141,6 +163,22 @@ Deep wallet profile — labels, balance, PnL, DeFi positions, and recent transac
 | 🔵 Neon Cyan | Labeled entity (Exchange, DEX, etc.) |
 | ⚫ Dim Slate | Unknown wallet |
 | 🔘 Muted Gray | Contract |
+
+## 📸 Gallery
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/terminal-investigate.png" width="400" /><br /><b>Investigate</b></td>
+    <td align="center"><img src="docs/screenshots/terminal-profile.png" width="400" /><br /><b>Profile</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/terminal-compare.png" width="400" /><br /><b>Compare</b></td>
+    <td align="center"><img src="docs/screenshots/terminal-compare-full.png" width="400" /><br /><b>Compare (Full)</b></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="docs/screenshots/terminal-telemetry.png" width="400" /><br /><b>Telemetry Receipt</b></td>
+  </tr>
+</table>
 
 ## 🧪 Development
 
@@ -168,8 +206,6 @@ npm run ci
 | jaredfromsubway.eth | `0xae2Fc483527B8EF99EB5D9B44875F005ba1FaE13` | MEV bot operator |
 | Wintermute | `0x0000000000000000000000000000000000000000` | Market maker |
 | Nomad Exploiter | `0x56D8B635A7C88Fd1104D23d632AF4003B16d0BF6` | Bridge exploit |
-| **Mock Target (Demo)** | `0xdead000000000000000000000000000000000001` | Core test wallet used in automated demo sequence |
-| **Mock Fund (Demo)** | `0xfund000000000000000000000000000000000002` | Test fund wallet used for counterparty comparisons |
 
 ## 🔧 Environment Variables
 
